@@ -2,6 +2,12 @@
 
 I am looking the a proper tsconfig.js to have a particular ng 17 compilation works.
 
+Note : to get the repo
+
+```bash
+git clone https://github.com/thomaspeugeot/ngimportissue.git
+```
+
 ## Situation
 
 A workspace has been created with angular version 17.
@@ -18,9 +24,7 @@ the workspace has been created with the following config
 ng new ng --defaults=true --minimal=true --no-standalone --routing --ssr=false
 ```
 
-## Import path for the project works for modules outsides the workspace
-
-The issue arises when ng tries to compiles modules outsides the workspace.
+## The issue arises when ng tries to compiles modules outsides the workspace.
 
 As seen in [ng/src/app/app.module.ts](https://github.com/thomaspeugeot/ngimportissue/blob/8a11d9dbe0a8a2b233f0e2073cc67723e63fb9a0/ng/src/app/app.module.ts), the application imports some modules that are outside the workspace. One of them is `GongModule`. 
 
@@ -104,7 +108,7 @@ Searching for "@angular/common/http" in "node_modules" directories starting from
 ✘ [ERROR] Could not resolve "@angular/common/http"
 ```
 
-It seems the builder is mislead by the the import path. It does not search the `esm2022` or `fesm2022` where the index file is present. Indeed `ng/node_modules/@angular/common/esm2022/http/http.mjs` is present (for information, this file is present but not in the git repo also, you need to perfom `go mod vendor` to have it present).
+It seems the builder is mislead by the the import path. It does not search the `esm2022` or `fesm2022` where the index file is present. Indeed `ng/node_modules/@angular/common/esm2022/http/http.mjs` is present (for information, this file is present but not in the git repo also, you need to perfom `npm i` to have it present).
 
 The import path in [ng/tsconfig.json](https://github.com/thomaspeugeot/ngimportissue/blob/8a11d9dbe0a8a2b233f0e2073cc67723e63fb9a0/ng/tsconfig.json) that worked with ng v16 is configured to work with import path outside the workspace.
 
