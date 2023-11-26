@@ -1,43 +1,28 @@
-# ng import path issue
+# Compilation issue with angular v17 with import path for modules outsides the workspace
 
-## Sitation
+I am looking the a proper tsconfig.js to have a particular ng 17 compilation works.
 
-workspace created with angular version 17
+## Situation
 
-````
-ng version
+A workspace has been created with angular version 17.
 
-     _                      _                 ____ _     ___
-    / \   _ __   __ _ _   _| | __ _ _ __     / ___| |   |_ _|
-   / △ \ | '_ \ / _` | | | | |/ _` | '__|   | |   | |    | |
-  / ___ \| | | | (_| | |_| | | (_| | |      | |___| |___ | |
- /_/   \_\_| |_|\__, |\__,_|_|\__,_|_|       \____|_____|___|
-                |___/
-    
-
+```bash
+% ng version
+...
 Angular CLI: 17.0.3
-Node: 20.10.0
-Package Manager: npm 10.2.3
-OS: darwin x64
+```
 
-Angular: 
-... 
+the workspace has been created with the following config
 
-Package                      Version
-------------------------------------------------------
-@angular-devkit/architect    0.1700.3 (cli-only)
-@angular-devkit/core         17.0.3 (cli-only)
-@angular-devkit/schematics   17.0.3 (cli-only)
-@schematics/angular          17.0.3 (cli-only)
-
+```bash
 ng new ng --defaults=true --minimal=true --no-standalone --routing --ssr=false
 ```
 
-## Import path for the project
+## Import path for the project works for modules outsides the workspace
 
-The application imports some modules that are outside the workspace. One of them is `GongModule``
+The issue arises when ng tries to compiles modules outsides the workspace.
 
-ng/src/app/app.module.ts
+As seen in [ng/src/app/app.module.ts](https://github.com/thomaspeugeot/ngimportissue/blob/8a11d9dbe0a8a2b233f0e2073cc67723e63fb9a0/ng/src/app/app.module.ts), the application imports some modules that are outside the workspace. One of them is `GongModule`. 
 
 ```ts
 ...
@@ -53,9 +38,8 @@ import { GongModule } from 'gong'
     GongModule,
 ```
 
-`GongModule` itself imports angular  modules
+As seen in [vendor/github.com/fullstack-lang/gong/ng/projects/gong/src/lib/gong.module.ts](https://github.com/thomaspeugeot/ngimportissue/blob/8a11d9dbe0a8a2b233f0e2073cc67723e63fb9a0/vendor/github.com/fullstack-lang/gong/ng/projects/gong/src/lib/gong.module.ts), `GongModule` itself imports angular  modules
 
-vendor/github.com/fullstack-lang/gong/ng/projects/gong/src/lib/gong.module.ts
 
 ```ts
 import { NgModule } from '@angular/core';
@@ -84,9 +68,13 @@ Angular cannot build the application
 
 ## Preliminary analysis
 
+### This is new with ng 17
+
 This problem did not occur with ng v16
 
-going verbose illuminates what's wrong
+### This is an issue related to the import path
+
+going verbose and having a trace in [ng/build_trace.txt](https://github.com/thomaspeugeot/ngimportissue/blob/8a11d9dbe0a8a2b233f0e2073cc67723e63fb9a0/ng/build_trace.txt), one better understands what's wrong
 
 > % ng build --verbose > build_trace.txt 2>&1 
 
@@ -116,11 +104,9 @@ Searching for "@angular/common/http" in "node_modules" directories starting from
 ✘ [ERROR] Could not resolve "@angular/common/http"
 ```
 
-It seems the builder is mislead by the the import path. It does not search the `esm2022` or `fesm2022` where the index file is present. Indeed `ng/node_modules/@angular/common/esm2022/http/http.mjs` is present.
+It seems the builder is mislead by the the import path. It does not search the `esm2022` or `fesm2022` where the index file is present. Indeed `ng/node_modules/@angular/common/esm2022/http/http.mjs` is present (for information, this file is present but not in the git repo also, you need to perfom `go mod vendor` to have it present).
 
-The import path that worked with ng v16 is configured to work with import path outside the workspace.
-
-ng/tsconfig.json
+The import path in [ng/tsconfig.json](https://github.com/thomaspeugeot/ngimportissue/blob/8a11d9dbe0a8a2b233f0e2073cc67723e63fb9a0/ng/tsconfig.json) that worked with ng v16 is configured to work with import path outside the workspace.
 
 ```json
     "paths": {
@@ -129,11 +115,63 @@ ng/tsconfig.json
       ],
 ```
 
-The does not work.
+It does not work with ng 17.
 
+### There is a Workaround
 
+If one configures the project as a `browser` instead of `application`, the compilation works.
+ It is this configuration that is created when one migrates the projects from ng 16 to ng 17.
 
-## Issue
+Below is the diff for [ng/angular.json](https://github.com/thomaspeugeot/ngimportissue/blob/8a11d9dbe0a8a2b233f0e2073cc67723e63fb9a0/ng/angular.json)
 
+```
+--- a/ng/angular.json
++++ b/ng/angular.json
+@@ -5,7 +5,7 @@
+     "ng": {
+       "architect": {
+         "build": {
+-          "builder": "@angular-devkit/build-angular:application",
++          "builder": "@angular-devkit/build-angular:browser",
+           "configurations": {
+             "development": {
+               "extractLicenses": false,
+@@ -34,7 +34,7 @@
+               "src/favicon.ico",
+               "src/assets"
+             ],
+-            "browser": "src/main.ts",
++            "main": "src/main.ts",
+             "index": "src/index.html",
+:...skipping...
+diff --git a/ng/angular.json b/ng/angular.json
+index 288f403..f4e5a7c 100644
+--- a/ng/angular.json
++++ b/ng/angular.json
+@@ -5,7 +5,7 @@
+     "ng": {
+       "architect": {
+         "build": {
+-          "builder": "@angular-devkit/build-angular:application",
++          "builder": "@angular-devkit/build-angular:browser",
+           "configurations": {
+             "development": {
+               "extractLicenses": false,
+@@ -34,7 +34,7 @@
+               "src/favicon.ico",
+               "src/assets"
+             ],
+-            "browser": "src/main.ts",
++            "main": "src/main.ts",
+             "index": "src/index.html",
+             "outputPath": "dist/ng",
+             "polyfills": [
+```
+
+## Questions
+
+I would like to undestand why the compilation fails.
+
+I am looking for the proper tsconfig.js config to have the compilation works. Other solutions could be suitable of course.
 
 
