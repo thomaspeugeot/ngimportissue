@@ -1,8 +1,4 @@
-# Compilation issue with angular v17 with import path for modules outsides the workspace
-
-I am looking the a proper tsconfig.js to have a particular ng 17 compilation works.
-
-Note : to get the repo
+# esbuild import path resolution issue with angular v17 for modules outsides the workspace
 
 ```bash
 git clone https://github.com/thomaspeugeot/ngimportissue.git
