@@ -168,10 +168,6 @@ index 288f403..f4e5a7c 100644
              "polyfills": [
 ```
 
-## Questions
-
-I would like to undestand why the compilation fails.
-
-I am looking for the proper tsconfig.js config to have the compilation works. Other solutions could be suitable of course.
+since [https://angular.io/guide/esbuild](https://angular.io/guide/esbuild#using-the-application-builder)https://angular.io/guide/esbuild#using-the-application-builder states that this is esbuild that performs the compilation, I surmises this is an issue related to esbuild.
 
 
