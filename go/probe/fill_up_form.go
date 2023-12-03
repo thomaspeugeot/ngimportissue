@@ -20,13 +20,15 @@ func FillUpForm[T models.Gongstruct](
 	// insertion point
 	case *models.Country:
 		// insertion point
-		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup, false)
+		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup, 
+			false, false, 0, false, 0)
 		AssociationFieldToForm("Hello", instanceWithInferedType.Hello, formGroup, probe)
 		AssociationSliceToForm("AlternateHellos", instanceWithInferedType, &instanceWithInferedType.AlternateHellos, formGroup, probe)
 
 	case *models.Hello:
 		// insertion point
-		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup, false)
+		BasicFieldtoForm("Name", instanceWithInferedType.Name, instanceWithInferedType, probe.formStage, formGroup, 
+			false, false, 0, false, 0)
 		{
 			var rf models.ReverseField
 			_ = rf
