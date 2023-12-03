@@ -1,18 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 
-import { Observable, combineLatest, timer } from 'rxjs'
-
-import * as gongdoc from 'gongdoc'
 import * as ngimportissue from 'ngimportissue'
 
-import { GongdocModule } from 'gongdoc'
-import { GongdocspecificModule } from 'gongdocspecific'
-
-import { GongtreeModule } from 'gongtree'
-import { GongtreespecificModule } from 'gongtreespecific'
-
 import * as gongtable from 'gongtable'
-import { GongtablespecificModule } from 'gongtablespecific'
 
 @Component({
   selector: 'app-root',
